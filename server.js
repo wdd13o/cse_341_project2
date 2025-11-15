@@ -22,6 +22,12 @@ const port = process.env.PORT || 3000;
 // Use body-parser for JSON (matches project screenshots)
 app.use(bodyParser.json());
 
+// Simple request logger to help debug deployed requests (logs method, path, host)
+app.use((req, res, next) => {
+  console.log(`[request] ${req.method} ${req.originalUrl} Host:${req.headers.host}`);
+  next();
+});
+
 // Allow CORS from any origin and accept common headers/methods
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
