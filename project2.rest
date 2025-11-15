@@ -1,0 +1,56 @@
+### Authors
+
+### Create an author
+POST http://localhost:3000/authors
+Content-Type: application/json
+
+{
+  "name": "Jane Austen",
+  "bio": "English novelist known for her six major novels.",
+  "birthDate": "1775-12-16",
+  "nationality": "British"
+}
+
+### Get all authors
+GET http://localhost:3000/authors
+
+### Books
+
+### Create a book
+POST http://localhost:3000/books
+Content-Type: application/json
+
+{
+  "title": "Pride and Prejudice",
+  "authorId": "<AUTHOR_ID_FROM_PREVIOUS_RESPONSE>",
+  "isbn": "9780141199078",
+  "publishedDate": "1813-01-28",
+  "pages": 432,
+  "genre": "Fiction",
+  "summary": "A classic novel about manners and marriage.",
+  "rating": 4.5
+}
+
+### Get all books
+GET http://localhost:3000/books
+
+### Get single book
+GET http://localhost:3000/books/{{id}}
+
+### Update book
+PUT http://localhost:3000/books/{{id}}
+Content-Type: application/json
+
+{
+  "title": "Pride and Prejudice (Updated)",
+  "authorId": "<AUTHOR_ID>",
+  "isbn": "9780141199078",
+  "publishedDate": "1813-01-28",
+  "pages": 432,
+  "genre": "Fiction",
+  "summary": "Updated summary.",
+  "rating": 4.6
+}
+
+### Delete book
+DELETE http://localhost:3000/books/{{id}}

@@ -1,0 +1,106 @@
+How to create and connect a MongoDB database (Atlas or local)
+
+This guide lists simple, safe steps to create a MongoDB database, add a collection and sample documents, and connect it to the Node project in this repository.
+
+1) Quick overview (choose one):
+   - MongoDB Atlas (cloud): create a free cluster, create database + user, add IP whitelist, use the connection string in an env var.
+   - Local MongoDB: install MongoDB Community Server, run the `mongod`/`mongosh` services locally and use a local connection string.
+
+2) MongoDB Atlas (recommended for publishing to Render)
+   a) Create an Atlas account at https://cloud.mongodb.com and log in.
+   b) Create a new free/Shared cluster (follow the UI defaults).
+   c) In "Database Access" create a database user (username and password) and save those credentials.
+   d) In "Network Access" add your IP (or 0.0.0.0/0 temporarily for testing).
+   e) In "Clusters", click "Connect" → "Connect your application" and copy the connection string. It looks like:
+      mongodb+srv://<username>:<password>@cluster0.abcd1234.mongodb.net/<dbname>?retryWrites=true&w=majority
+   f) Replace <username>, <password>, and <dbname> with your values. Pick a database name like cse_341_project2.
+
+   PowerShell example to set environment variable locally for testing (current session):
+   $env:MONGODB_URL = 'mongodb+srv://myUser:myPass@cluster0.abcd1234.mongodb.net/cse_341_project2?retryWrites=true&w=majority'
+
+3) Local MongoDB (if you prefer to run locally)
+   a) Download and install MongoDB Community Server (https://www.mongodb.com/try/download/community) or use a package manager.
+   b) Start the server (Windows): the installer may create a service named MongoDB. To run manually using PowerShell:
+      # Run mongod from the installation bin directory or ensure it's in PATH
+      mongod --dbpath "C:\data\db"
+   c) Connect with the shell (mongosh) and create the database/collections:
+      mongosh
+      use cse_341_project2
+      db.createCollection('authors')
+      db.createCollection('books')
+      db.authors.insertOne({ name: 'Jane Austen', bio: 'English novelist', birthDate: new Date('1775-12-16'), nationality: 'British' })
+
+   Local connection string to use in env (PowerShell):
+   $env:MONGODB_URL = 'mongodb://localhost:27017/cse_341_project2'
+
+4) Create collections and insert sample documents (Atlas or local via mongosh)
+   # Example insert for authors (mongosh)
+   use cse_341_project2
+   db.authors.insertOne({
+     name: 'Jane Austen',
+     bio: 'English novelist known for her six major novels.',
+     birthDate: new Date('1775-12-16'),
+     nationality: 'British',
+     website: ''
+   })
+
+   # Example insert for books (reference author by _id)
+   const author = db.authors.findOne({ name: 'Jane Austen' })
+   db.books.insertOne({
+     title: 'Pride and Prejudice',
+     authorId: author._id,           // store ObjectId
+     isbn: '9780141199078',
+     publishedDate: new Date('1813-01-28'),
+     pages: 432,
+     genre: 'Fiction',
+     summary: 'A classic novel about manners and marriage.',
+     rating: 4.5
+   })
+
+5) Wire the connection into this Node project
+   - This project reads MONGODB_URL from environment (see data/database.js). Create a `.env` file at the repo root with:
+     MONGODB_URL=<your connection string>
+
+   - Never commit `.env`. Add a `.gitignore` entry if not present:
+     .env
+
+   - Start the server (PowerShell):
+     npm install     # if you haven't already
+     node server.js
+
+   - If you prefer to run with an env var inline for a one-off run (PowerShell):
+     $env:MONGODB_URL='mongodb://localhost:27017/cse_341_project2'; node server.js
+
+6) Verify the API endpoints
+   - Use the included `project2.rest` file (VSCode REST client) or curl/Postman.
+   - Example curl (PowerShell):
+     curl -Method GET http://localhost:3000/authors
+
+   - Create an author (PowerShell curl):
+     curl -Method POST -ContentType 'application/json' -Body '{"name":"Jane Austen","bio":"English novelist","birthDate":"1775-12-16","nationality":"British"}' http://localhost:3000/authors
+
+7) Render deployment notes
+   - In Render service settings add an environment variable named MONGODB_URL with the Atlas connection string.
+   - Ensure your Atlas Network Access has Render's IP ranges allowed (or allow 0.0.0.0/0 while testing and tighten later).
+
+8) Security and best practices
+   - Never commit credentials to git. Use environment variables or secret managers.
+   - Use a DB user with least privilege for the application.
+   - For production, require SSL/TLS and enable user-level authentication on MongoDB.
+
+9) Troubleshooting
+   - "Database not initialized" error: Confirm MONGODB_URL is set and reachable; check firewall/IP whitelist for Atlas.
+   - Connection refused: for local DB ensure `mongod` is running and listening on the expected port.
+   - Invalid ObjectId errors: ensure route parameters passed as IDs are valid Mongo ObjectId strings.
+
+10) Helpful links
+   - MongoDB Atlas quickstart: https://www.mongodb.com/docs/atlas/getting-started/
+   - mongosh shell docs: https://www.mongodb.com/docs/mongodb-shell/
+   - MongoDB connection string format: https://www.mongodb.com/docs/manual/reference/connection-string/
+
+If you'd like, I can also:
+ - Add a `.env.example` file to the repo.
+ - Add `.gitignore` entries if .env isn't already ignored.
+ - Start the server here and run a quick smoke test against `/authors` and `/books`.
+
+End of mongodb.txt
