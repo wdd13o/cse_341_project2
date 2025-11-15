@@ -32,8 +32,8 @@ router.get('/', (req, res) => {
 							<li>Authors: <a href="/authors">/authors</a> (GET, POST, PUT, DELETE)</li>
 							<li>Books: <a href="/books">/books</a> (GET, POST, PUT, DELETE)</li>
 						</ul>
-						<p>Swagger UI (if available): <a href="/api-docs">/api-docs</a></p>
-						<p>Legacy users endpoints are under <code>/users</code> and single user at <code>/user/:id</code>.</p>
+						<p>Swagger UI: <a href="/api-docs">/api-docs</a></p>
+						
 					</body>
 				</html>
 		`);
