@@ -9,7 +9,6 @@ try {
 	// ignore if swagger router isn't present
 }
 
-const usersController = require('../controllers/users');
 const booksRouter = require('./books');
 const authorsRouter = require('./authors');
 
@@ -39,12 +38,7 @@ router.get('/', (req, res) => {
 		`);
 });
 
-// Single user route (kept specific to avoid conflicts)
-router.get('/user/:id', usersController.getSingle);
-
-// Legacy plural routes for compatibility: /users and /users/:id
-router.get('/users', usersController.getAll);
-router.get('/users/:id', usersController.getSingle);
+// (User routes removed)
 
 // Project 2 routes
 router.use('/books', booksRouter);

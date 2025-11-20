@@ -1,14 +1,14 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Users Api",
-    "description": "Users Api",
+    "title": "Project 2 API",
+    "description": "Books and Authors API for Project 2",
     "version": "1.0.0"
   },
-  "host": "localhost:3000",
+  "host": "cse-341-project2-1dsv.onrender.com",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "paths": {
     "/authors": {
@@ -77,8 +77,7 @@
         "name": {"type": "string"},
         "bio": {"type": "string"},
         "birthDate": {"type": "string", "format": "date"},
-        "nationality": {"type": "string"},
-        "website": {"type": "string"}
+        "nationality": {"type": "string"}
       },
       "required": ["name"]
     },

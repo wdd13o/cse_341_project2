@@ -15,6 +15,15 @@ try {
     swaggerSpec = {};
   }
 }
+
+// If running on Render (or another host) allow overriding the swagger host
+// so the Swagger UI can call the deployed API instead of localhost.
+// Default to the provided Render URL if no env var is set.
+const renderHost = process.env.RENDER_HOST || process.env.RENDER_EXTERNAL_URL || 'cse-341-project2-1dsv.onrender.com';
+if (renderHost && typeof swaggerSpec === 'object') {
+  // Ensure host value doesn't include protocol
+  swaggerSpec.host = renderHost.replace(/^https?:\/\//, '');
+}
 const app = express();
 
 const port = process.env.PORT || 3000;
@@ -38,7 +47,6 @@ app.use((req, res, next) => {
 
 // Mount main routes and API routes
 app.use('/', require('./routes'));
-app.use('/api/contacts', require('./routes/users')); 
 // Mount new W03 routes (match project2.rest which uses /books and /authors)
 app.use('/books', require('./routes/books'));
 app.use('/authors', require('./routes/authors'));
@@ -77,6 +85,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const path = require('path');
 const fs = require('fs');
 app.get('/swagger.json', (req, res) => {
+  // Serve the in-memory swaggerSpec (possibly overridden by env) when available.
+  if (swaggerSpec && Object.keys(swaggerSpec).length) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.json(swaggerSpec);
+  }
   const p = path.join(__dirname, 'swagger.json');
   if (!fs.existsSync(p)) return res.status(404).json({ message: 'swagger.json not found' });
   res.setHeader('Content-Type', 'application/json');

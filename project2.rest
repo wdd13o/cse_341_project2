@@ -1,7 +1,11 @@
+@host = https://cse-341-project2-1dsv.onrender.com
+@authorId = REPLACE_WITH_AUTHOR_ID
+@bookId = REPLACE_WITH_BOOK_ID
+
 ### Authors
 
 ### Create an author
-POST http://localhost:3000/authors
+POST {{host}}/authors
 Content-Type: application/json
 
 {
@@ -12,17 +16,21 @@ Content-Type: application/json
 }
 
 ### Get all authors
-GET http://localhost:3000/authors
+GET {{host}}/authors
+
+### (Optional) Set `authorId` variable
+# After creating an author, copy the `_id` from the response and set `authorId` like:
+# @authorId = <paste-id-here>
 
 ### Books
 
 ### Create a book
-POST http://localhost:3000/books
+POST {{host}}/books
 Content-Type: application/json
 
 {
   "title": "Pride and Prejudice",
-  "authorId": "<AUTHOR_ID_FROM_PREVIOUS_RESPONSE>",
+  "authorId": "{{authorId}}",
   "isbn": "9780141199078",
   "publishedDate": "1813-01-28",
   "pages": 432,
@@ -32,18 +40,18 @@ Content-Type: application/json
 }
 
 ### Get all books
-GET http://localhost:3000/books
+GET {{host}}/books
 
 ### Get single book
-GET http://localhost:3000/books/{{id}}
+GET {{host}}/books/{{bookId}}
 
 ### Update book
-PUT http://localhost:3000/books/{{id}}
+PUT {{host}}/books/{{bookId}}
 Content-Type: application/json
 
 {
   "title": "Pride and Prejudice (Updated)",
-  "authorId": "<AUTHOR_ID>",
+  "authorId": "{{authorId}}",
   "isbn": "9780141199078",
   "publishedDate": "1813-01-28",
   "pages": 432,
@@ -53,4 +61,4 @@ Content-Type: application/json
 }
 
 ### Delete book
-DELETE http://localhost:3000/books/{{id}}
+DELETE {{host}}/books/{{bookId}}
