@@ -49,7 +49,12 @@ router.use('/authors', authorsRouter);
 router.get('/login', (req, res) => res.redirect('/auth/google'));
 
 // Google login route (starts OAuth)
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }), (req, res) => {});
+router.get('/auth/google', (req, res, next) => {
+	if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+		return res.status(501).send('Google OAuth is not configured on this server.');
+	}
+	return passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
 // Logout route - ends session and redirect to root
 router.get('/logout', function (req, res, next) {

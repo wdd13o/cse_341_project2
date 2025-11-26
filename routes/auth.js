@@ -7,11 +7,20 @@ const { ObjectId } = require('mongodb');
 const router = express.Router();
 
 // Start Google OAuth flow
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(501).json({ message: 'Google OAuth not configured on this server.' });
+  }
+  return passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
 // Google OAuth callback with proper error handling
 router.get('/google/callback', (req, res, next) => {
   // Use custom callback to handle errors
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(501).json({ message: 'Google OAuth not configured on this server.' });
+  }
+
   passport.authenticate('google', { session: false }, (err, user, info) => {
     if (err) {
       console.error('[auth/google/callback] OAuth error:', err.message);
@@ -24,8 +33,11 @@ router.get('/google/callback', (req, res, next) => {
       return res.status(401).json({ message: 'Authentication failed', info });
     }
 
-    // User authenticated, issue JWT
+    // User authenticated, issue JWT and set session
     try {
+      // Set the session user so session-based protected routes work
+      req.session.user = user;
+      
       const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME';
       const payload = { id: user._id.toString(), email: user.email || null };
       const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
