@@ -32,20 +32,82 @@ const app = express();
 
 // Passport + OAuth setup
 const passport = require('passport');
+const GitHubStrategy = require('passport-github2').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 try {
   require('./config/passport')(passport);
 } catch (e) {
   console.warn('Passport not fully configured (missing env vars?):', e && e.message);
 }
 
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
+// Optional: register GitHub strategy inline if env vars present
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  try {
+    passport.use(new GitHubStrategy({
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.CALLBACK_URL || process.env.GITHUB_CALLBACK_URL
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        const db = mongodb.getDatabase();
+        const users = db.collection('users');
+        let user = await users.findOne({ githubId: profile.id });
+        if (!user) {
+          const newUser = {
+            githubId: profile.id,
+            displayName: profile.displayName || profile.username || null,
+            email: (profile.emails && profile.emails[0] && profile.emails[0].value) || null,
+            createdAt: new Date()
+          };
+          const r = await users.insertOne(newUser);
+          newUser._id = r.insertedId;
+          user = newUser;
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
+    }));
+    console.log('[passport] GitHub strategy configured.');
+  } catch (err) {
+    console.warn('[passport] Failed to configure GitHub strategy:', err && err.message);
+  }
+}
 
-passport.deserializeUser((user, done) => {
-  done(null, user);
-});
-
+// Optional: register Google strategy inline if env vars present
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  try {
+    passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || (`https://${process.env.RENDER_HOST || 'cse-341-project2-1dsv.onrender.com'}/auth/google/callback`)
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        // Minimal handler: try to find or create a user in the DB by googleId
+        const db = mongodb.getDatabase();
+        const users = db.collection('users');
+        let user = await users.findOne({ googleId: profile.id });
+        if (!user) {
+          const newUser = {
+            googleId: profile.id,
+            displayName: profile.displayName,
+            email: (profile.emails && profile.emails[0] && profile.emails[0].value) || null,
+            createdAt: new Date()
+          };
+          const r = await users.insertOne(newUser);
+          newUser._id = r.insertedId;
+          user = newUser;
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
+    }));
+    console.log('[passport] Google strategy configured.');
+  } catch (err) {
+    console.warn('[passport] Failed to configure Google strategy:', err && err.message);
+  }
+}
 
 // Startup environment check (helpful for diagnosing missing env vars)
 (() => {
@@ -89,6 +151,14 @@ app.use(passport.session());
 // CORS - use the cors package for consistent handling
 app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE','OPTIONS'] }));
 
+// Simple passport session serializers (store user object in session)
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
 // Very small status page for quick manual testing of session-based login
 app.get('/', (req, res) => {
   try {
@@ -99,15 +169,12 @@ app.get('/', (req, res) => {
   }
 });
 
-// Google callback route (sets session.user then redirects)
-app.get('/google/callback', passport.authenticate('google', { failureRedirect: '/api-docs', session: false }), (req, res) => {
+// Backwards-compatible GitHub callback route (sets session.user then redirects)
+app.get('/github/callback', passport.authenticate('github', { failureRedirect: '/api-docs', session: false }), (req, res) => {
   // store authenticated user in the express session for simple session-based flows
   req.session.user = req.user;
   res.redirect('/');
 });
-
-// NOTE: passport serialize/deserialize and OAuth strategies are configured in `config/passport.js`.
-// Server only initializes sessions and passport; routes for OAuth callbacks are in `routes/auth.js`.
 
 // Mount main routes and API routes
 app.use('/', require('./routes'));

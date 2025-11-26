@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 
 // Serve Swagger UI from routes/swagger.js
 try {
@@ -43,6 +44,20 @@ router.get('/', (req, res) => {
 // Project 2 routes
 router.use('/books', booksRouter);
 router.use('/authors', authorsRouter);
+
+// Legacy login route — redirect to Google OAuth start
+router.get('/login', (req, res) => res.redirect('/auth/google'));
+
+// Google login route (starts OAuth)
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }), (req, res) => {});
+
+// Logout route - ends session and redirect to root
+router.get('/logout', function (req, res, next) {
+	req.logout(function (err) {
+		if (err) return next(err);
+		res.redirect('/');
+	});
+});
 
 module.exports = router;
 

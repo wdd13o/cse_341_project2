@@ -1,20 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const authorsController = require('../controllers/authors');
+const router = require('express').Router();
 
-// GET /authors
-router.get('/', authorsController.getAll);
+const getAuthorsController = require('../controllers/authors');
 
-// GET /authors/:id
-router.get('/:id', authorsController.getSingle);
+const { isAuthenticated } = require('../middleware/auth');
 
-// POST /authors
-router.post('/', authorsController.create);
+router.get('/', getAuthorsController.getAll);
 
-// PUT /authors/:id
-router.put('/:id', authorsController.update);
+router.get('/:id', getAuthorsController.getSingle);
 
-// DELETE /authors/:id
-router.delete('/:id', authorsController.remove);
+router.post('/', isAuthenticated, getAuthorsController.create);
+
+router.put('/:id', isAuthenticated, getAuthorsController.update);
+
+router.delete('/:id', isAuthenticated, getAuthorsController.remove);
 
 module.exports = router;
+

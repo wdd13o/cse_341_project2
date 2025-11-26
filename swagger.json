@@ -10,6 +10,14 @@
   "schemes": [
     "https"
   ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter: Bearer <JWT>"
+    }
+  },
   "paths": {
     "/authors": {
       "get": {
@@ -19,6 +27,7 @@
       },
       "post": {
         "description": "Create an author",
+        "security": [{"Bearer":[]}],
         "parameters": [{"name": "body", "in": "body", "schema": {"$ref": "#/definitions/Author"}}],
         "responses": {"201": {"description": "Created"}, "400": {"description": "Bad Request"}, "500": {"description": "Internal Server Error"}}
       }
@@ -31,11 +40,13 @@
       },
       "put": {
         "description": "Update author by id",
+        "security": [{"Bearer":[]}],
         "parameters": [{"name": "id", "in": "path", "required": true, "type": "string"}, {"name": "body", "in": "body", "schema": {"$ref": "#/definitions/Author"}}],
         "responses": {"204": {"description": "No Content"}, "400": {"description": "Bad Request"}, "500": {"description": "Internal Server Error"}}
       },
       "delete": {
         "description": "Delete author by id",
+        "security": [{"Bearer":[]}],
         "parameters": [{"name": "id", "in": "path", "required": true, "type": "string"}],
         "responses": {"204": {"description": "No Content"}, "400": {"description": "Bad Request"}, "404": {"description": "Not Found"}, "500": {"description": "Internal Server Error"}}
       }
@@ -48,6 +59,7 @@
       },
       "post": {
         "description": "Create a book",
+        "security": [{"Bearer":[]}],
         "parameters": [{"name": "body", "in": "body", "schema": {"$ref": "#/definitions/Book"}}],
         "responses": {"201": {"description": "Created"}, "400": {"description": "Bad Request"}, "500": {"description": "Internal Server Error"}}
       }
@@ -60,11 +72,13 @@
       },
       "put": {
         "description": "Update book by id",
+        "security": [{"Bearer":[]}],
         "parameters": [{"name": "id", "in": "path", "required": true, "type": "string"}, {"name": "body", "in": "body", "schema": {"$ref": "#/definitions/Book"}}],
         "responses": {"204": {"description": "No Content"}, "400": {"description": "Bad Request"}, "500": {"description": "Internal Server Error"}}
       },
       "delete": {
         "description": "Delete book by id",
+        "security": [{"Bearer":[]}],
         "parameters": [{"name": "id", "in": "path", "required": true, "type": "string"}],
         "responses": {"204": {"description": "No Content"}, "400": {"description": "Bad Request"}, "404": {"description": "Not Found"}, "500": {"description": "Internal Server Error"}}
       }
