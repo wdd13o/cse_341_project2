@@ -69,13 +69,36 @@ router.get('/success', async (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(`
     <html>
-      <head><title>Login Success</title></head>
+      <head>
+        <title>Login Success</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; text-align: center; }
+          h2 { color: #28a745; }
+          .token-section { margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 5px; }
+          pre { background: #e8e8e8; padding: 10px; border-radius: 3px; text-align: left; overflow-x: auto; }
+          .button-section { margin: 20px 0; }
+          button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; }
+          .logout-btn { background-color: #dc3545; color: white; }
+          .logout-btn:hover { background-color: #c82333; }
+          .home-btn { background-color: #007bff; color: white; }
+          .home-btn:hover { background-color: #0056b3; }
+        </style>
+      </head>
       <body>
         <h2>✓ Login Successful: ${name}</h2>
-        <p>Copy this token and use it in API requests:</p>
-        <pre>${token}</pre>
-        <p>In your requests, include the header:</p>
-        <pre>Authorization: Bearer ${token}</pre>
+        <p>Welcome! You are now logged in.</p>
+        
+        <div class="token-section">
+          <p><strong>Copy this token and use it in API requests:</strong></p>
+          <pre>${token}</pre>
+          <p>In your requests, include the header:</p>
+          <pre>Authorization: Bearer ${token}</pre>
+        </div>
+
+        <div class="button-section">
+          <button class="home-btn" onclick="location.href='/'">Go to Home</button>
+          <button class="logout-btn" onclick="location.href='/auth/logout'">Logout</button>
+        </div>
       </body>
     </html>
   `);
@@ -164,7 +187,51 @@ router.get('/me', async (req, res) => {
 
 // Logout
 router.get('/logout', (req, res) => {
-  res.json({ message: 'Logout: discard the token on the client.' });
+  if (req.session) {
+    req.session.destroy((err) => {
+      res.setHeader('Content-Type', 'text/html');
+      res.send(`
+        <html>
+          <head>
+            <title>Logged Out</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 40px; text-align: center; }
+              h2 { color: #dc3545; }
+              button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; background-color: #007bff; color: white; }
+              button:hover { background-color: #0056b3; }
+            </style>
+          </head>
+          <body>
+            <h2>✓ Logged Out Successfully</h2>
+            <p>You have been logged out. Your session has been cleared.</p>
+            <button onclick="location.href='/'">Go to Home</button>
+            <button onclick="location.href='/auth/google'">Login Again</button>
+          </body>
+        </html>
+      `);
+    });
+  } else {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(`
+      <html>
+        <head>
+          <title>Logged Out</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; text-align: center; }
+            h2 { color: #dc3545; }
+            button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; background-color: #007bff; color: white; }
+            button:hover { background-color: #0056b3; }
+          </style>
+        </head>
+        <body>
+          <h2>✓ Logged Out</h2>
+          <p>You have been logged out.</p>
+          <button onclick="location.href='/'">Go to Home</button>
+          <button onclick="location.href='/auth/google'">Login Again</button>
+        </body>
+      </html>
+    `);
+  }
 });
 
 module.exports = router;
